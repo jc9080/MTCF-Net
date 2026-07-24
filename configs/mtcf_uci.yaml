@@ -1,0 +1,51 @@
+experiment:
+  name: mtcf_uci_har
+  seed: 42
+
+data:
+  dataset: uci_har
+  root_dir: data/UCI HAR Dataset
+  sequence_length: 128
+  input_channels: 6
+  num_classes: 6
+  train_batch_size: 128
+  test_batch_size: 128
+  num_workers: 4
+  random_mask_ratio: 0.04
+  gaussian_noise_std: 0.01
+
+model:
+  input_dim: 6
+  embedding_dim: 64
+
+  backbone:
+    name: resnet50_timeseries
+    stage_channels: [256, 512, 1024, 2048]
+    stage_blocks: [3, 4, 6, 3]
+
+  tsm:
+    shift_ratio: 0.25
+
+  mcfi:
+    embed_dim: 256
+    num_heads: 8
+    dropout: 0.1
+
+  tdm:
+    embed_dim: 512
+    window_size: 8
+    stride: 4
+    num_heads: 8
+    dropout: 0.1
+
+  adf:
+    embed_dim: 2048
+    num_heads: 8
+    dropout: 0.1
+
+training:
+  epochs: 100
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  gradient_clip_norm: 1.0
+  optimizer: adam
