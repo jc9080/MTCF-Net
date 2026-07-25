@@ -1,0 +1,15 @@
+============================================================
+MTCF-Net UCI-HAR Evaluation
+============================================================
+Device          : cuda
+Data directory  : data/UCI HAR Dataset
+Checkpoint      : checkpoints/best_model.pth
+Batch size      : 64
+GPU             : NVIDIA H200 NVL
+============================================================
+Evaluation Results
+============================================================
+Test Loss     : 0.3012
+Test Accuracy : 92.70%
+Test Macro F1 : 92.93%
+============================================================
