@@ -11,3 +11,10 @@ runs/
 *.pt
 *.pth
 *.ckpt
+
+# Training outputs
+checkpoints/
+*.pth
+*.pt
+*.log
+evaluation_*.txt

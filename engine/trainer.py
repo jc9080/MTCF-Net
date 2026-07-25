@@ -256,7 +256,7 @@ class Trainer:
         """
 
         for epoch in range(
-            start_epoch,
+            start_epoch - 1,
             epochs,
         ):
 

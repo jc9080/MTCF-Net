@@ -180,7 +180,7 @@ def main() -> None:
     print("=" * 60)
     print(f"Test Loss     : {test_loss:.4f}")
     print(f"Test Accuracy : {test_accuracy * 100:.2f}%")
-    print(f"Test Macro F1 : {test_macro_f1:.4f}")
+    print(f"Test Macro F1 : {test_macro_f1 * 100:.2f}%")
     print("=" * 60)
 
 
