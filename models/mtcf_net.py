@@ -238,6 +238,32 @@ def mtcf_net_uci_har(
     )
 
 
+def mtcf_net_pamap2(
+    num_classes: int = 18,
+    dropout: float = 0.1,
+) -> MTCFNet:
+    """
+    Build MTCF-Net configured for the PAMAP2 dataset.
+
+    Default PAMAP2 input:
+        Input:  (B, 256, 28)
+        Output: (B, 18)
+    """
+    return MTCFNet(
+        input_channels=28,
+        num_classes=num_classes,
+        use_tsm=True,
+        tsm_fold_div=4,
+        mcfi_num_heads=8,
+        tdm_window_size=8,
+        tdm_stride=4,
+        tdm_num_heads=8,
+        adf_num_heads=8,
+        dropout=dropout,
+    )
+
+
+
 def count_trainable_parameters(model: nn.Module) -> int:
     """
     Count trainable model parameters.

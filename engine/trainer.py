@@ -81,7 +81,7 @@ class Trainer:
 
         running_loss = 0.0
 
-        metric = MetricAccumulator(num_classes=6)
+        metric = MetricAccumulator(num_classes=self.model.num_classes)
 
         progress = tqdm(
             train_loader,
@@ -174,7 +174,7 @@ class Trainer:
 
         running_loss = 0.0
 
-        metric = MetricAccumulator(num_classes=6)
+        metric = MetricAccumulator(num_classes=self.model.num_classes)
 
         progress = tqdm(
             val_loader,
@@ -242,7 +242,7 @@ class Trainer:
         train_loader,
         val_loader,
         epochs: int,
-        start_epoch: int = 1,
+        start_epoch: int = 0,
     ) -> None:
         """
         Train the model.
@@ -255,10 +255,7 @@ class Trainer:
         start_epoch
         """
 
-        for epoch in range(
-            start_epoch - 1,
-            epochs,
-        ):
+        for epoch in range(start_epoch, epochs):
 
             train_loss, train_acc, train_f1 = (
                 self.train_one_epoch(
