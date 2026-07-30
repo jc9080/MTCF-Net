@@ -12,7 +12,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from datasets.pamap2 import create_pamap2_loaders
+from datasets.pamap2 import create_pamap2_random_loaders
 from engine.trainer import Trainer
 from models.mtcf_net import (
     count_trainable_parameters,
@@ -147,17 +147,17 @@ def create_loaders(args: argparse.Namespace) -> tuple[Any, Any]:
     }
 
     kwargs = supported_kwargs(
-        create_pamap2_loaders,
+        create_pamap2_random_loaders,
         loader_candidates,
     )
 
     print(f"DataLoader arguments: {kwargs}")
 
-    loaders = create_pamap2_loaders(**kwargs)
+    loaders = create_pamap2_random_loaders(**kwargs)
 
     if not isinstance(loaders, (tuple, list)) or len(loaders) < 2:
         raise RuntimeError(
-            "create_pamap2_loaders() must return at least two loaders."
+            "create_pamap2_random_loaders() must return at least two loaders."
         )
 
     train_loader = loaders[0]

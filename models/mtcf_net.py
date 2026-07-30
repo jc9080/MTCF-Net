@@ -68,6 +68,12 @@ class MTCFNet(nn.Module):
         self.input_channels = input_channels
         self.num_classes = num_classes
 
+        self.register_buffer(
+            "_positional_encoding_cache",
+            torch.empty(0),
+            persistent=False,
+        )
+
         self.backbone: ResNet1DBackbone = resnet50_1d(
             input_channels=input_channels,
             use_tsm=use_tsm,
@@ -125,6 +131,8 @@ class MTCFNet(nn.Module):
         self._validate_input(x)
 
         features: Dict[str, Tensor] = OrderedDict()
+
+        x = x + self._get_temporal_positional_encoding(x)
 
         x = self.backbone.stem_forward(x)
         features["stem"] = x
@@ -188,6 +196,75 @@ class MTCFNet(nn.Module):
         logits = self.classifier(pooled)
 
         return logits
+
+    def _get_temporal_positional_encoding(
+        self,
+        x: Tensor,
+    ) -> Tensor:
+        """
+        Create sinusoidal temporal positional encoding.
+
+        Input:
+            x: (B, T, C)
+
+        Returns:
+            positional encoding: (1, T, C)
+        """
+        sequence_length = x.size(1)
+        channels = x.size(2)
+
+        cache = self._positional_encoding_cache
+
+        cache_is_valid = (
+            cache.numel() > 0
+            and cache.size(1) == sequence_length
+            and cache.size(2) == channels
+            and cache.device == x.device
+            and cache.dtype == x.dtype
+        )
+
+        if cache_is_valid:
+            return cache
+
+        position = torch.arange(
+            sequence_length,
+            device=x.device,
+            dtype=torch.float32,
+        ).unsqueeze(1)
+
+        even_indices = torch.arange(
+            0,
+            channels,
+            2,
+            device=x.device,
+            dtype=torch.float32,
+        )
+
+        div_term = torch.exp(
+            even_indices
+            * (-torch.log(torch.tensor(10000.0, device=x.device))
+               / max(channels, 1))
+        )
+
+        encoding = torch.zeros(
+            1,
+            sequence_length,
+            channels,
+            device=x.device,
+            dtype=torch.float32,
+        )
+
+        encoding[0, :, 0::2] = torch.sin(position * div_term)
+
+        if channels > 1:
+            encoding[0, :, 1::2] = torch.cos(
+                position * div_term[: encoding[0, :, 1::2].shape[-1]]
+            )
+
+        encoding = encoding.to(dtype=x.dtype)
+        self._positional_encoding_cache = encoding
+
+        return encoding
 
     def _validate_input(self, x: Tensor) -> None:
         """

@@ -161,11 +161,19 @@ def compute_metrics_from_confusion_matrix(
 
     accuracy = true_positive.sum() / total_count
 
+    # Macro metrics are averaged only over classes present
+    # in the ground-truth targets.
+    present_classes = target_count > 0
+
+    macro_precision = precision[present_classes].mean()
+    macro_recall = recall[present_classes].mean()
+    macro_f1 = f1[present_classes].mean()
+
     return ClassificationMetrics(
         accuracy=float(accuracy.item()),
-        macro_precision=float(precision.mean().item()),
-        macro_recall=float(recall.mean().item()),
-        macro_f1=float(f1.mean().item()),
+        macro_precision=float(macro_precision.item()),
+        macro_recall=float(macro_recall.item()),
+        macro_f1=float(macro_f1.item()),
         confusion_matrix=confusion_matrix.detach().clone(),
     )
 

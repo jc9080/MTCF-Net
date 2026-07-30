@@ -1,0 +1,55 @@
+==============================================================
+MTCF-Net PAMAP2 Evaluation
+Random Window Split (1 Epoch)
+==============================================================
+
+Dataset
+-------
+PAMAP2
+Protocol + Optional
+
+Input
+-----
+Window Size : 256
+Stride      : 128
+Channels    : 28
+
+Split
+-----
+Train Samples      : 14928
+Validation Samples : 1817
+Test Samples       : 4522
+
+Training
+--------
+Epochs        : 1
+Batch Size    : 64
+Learning Rate : 0.0005
+Weight Decay  : 0.0001
+Optimizer     : Adam
+
+Training Results
+----------------
+Train Loss : 1.0495
+Train Accuracy : 69.81%
+Train Macro F1 : 66.03%
+
+Validation Results
+------------------
+Validation Loss : 0.6425
+Validation Accuracy : 82.40%
+Validation Macro F1 : 75.13%
+
+Evaluation Results
+------------------
+Test Loss     : 1.0882
+Test Accuracy : 67.51%
+Test Macro F1 : 59.08%
+
+Notes
+-----
+Split Method : Random Window Split
+Subjects      : 101-109
+Data          : Protocol + Optional
+
+==============================================================

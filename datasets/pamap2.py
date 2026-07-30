@@ -307,3 +307,134 @@ def create_pamap2_loaders(
     )
 
     return train_loader, val_loader, test_loader
+
+
+def create_pamap2_random_loaders(
+    data_dir: str | Path,
+    batch_size: int = 64,
+    num_workers: int = 4,
+    window_size: int = 256,
+    stride: int = 128,
+    seed: int = 42,
+) -> tuple[DataLoader, DataLoader, DataLoader]:
+    """
+    Create stratified random train/validation/test loaders.
+
+    All subjects 101-109 are included.
+    Split ratio:
+        train = 70%
+        val   = 15%
+        test  = 15%
+
+    This function is intended as a diagnostic experiment for comparing
+    random-window splitting with the subject-independent split.
+    """
+    root = Path(data_dir)
+
+    all_x, all_y = _build_split(
+        root=root,
+        subject_ids=[101, 102, 103, 104, 105, 106, 107, 108, 109],
+        include_optional=True,
+        window_size=window_size,
+        stride=stride,
+    )
+
+    rng = np.random.default_rng(seed)
+
+    train_indices: list[int] = []
+    val_indices: list[int] = []
+    test_indices: list[int] = []
+
+    for class_id in np.unique(all_y):
+        class_indices = np.flatnonzero(all_y == class_id)
+        rng.shuffle(class_indices)
+
+        num_samples = len(class_indices)
+        num_train = int(num_samples * 0.70)
+        num_val = int(num_samples * 0.15)
+
+        train_indices.extend(class_indices[:num_train].tolist())
+        val_indices.extend(
+            class_indices[num_train:num_train + num_val].tolist()
+        )
+        test_indices.extend(
+            class_indices[num_train + num_val:].tolist()
+        )
+
+    train_indices = np.asarray(train_indices, dtype=np.int64)
+    val_indices = np.asarray(val_indices, dtype=np.int64)
+    test_indices = np.asarray(test_indices, dtype=np.int64)
+
+    rng.shuffle(train_indices)
+    rng.shuffle(val_indices)
+    rng.shuffle(test_indices)
+
+    train_x = all_x[train_indices]
+    train_y = all_y[train_indices]
+
+    val_x = all_x[val_indices]
+    val_y = all_y[val_indices]
+
+    test_x = all_x[test_indices]
+    test_y = all_y[test_indices]
+
+    train_x, val_x, test_x = _normalize_splits(
+        train_x,
+        val_x,
+        test_x,
+    )
+
+    train_dataset = PAMAP2Dataset(
+        train_x,
+        train_y,
+        augment=True,
+    )
+    val_dataset = PAMAP2Dataset(
+        val_x,
+        val_y,
+        augment=False,
+    )
+    test_dataset = PAMAP2Dataset(
+        test_x,
+        test_y,
+        augment=False,
+    )
+
+    loader_kwargs = {
+        "batch_size": batch_size,
+        "num_workers": num_workers,
+        "pin_memory": torch.cuda.is_available(),
+    }
+
+    train_loader = DataLoader(
+        train_dataset,
+        shuffle=True,
+        drop_last=True,
+        **loader_kwargs,
+    )
+    val_loader = DataLoader(
+        val_dataset,
+        shuffle=False,
+        drop_last=False,
+        **loader_kwargs,
+    )
+    test_loader = DataLoader(
+        test_dataset,
+        shuffle=False,
+        drop_last=False,
+        **loader_kwargs,
+    )
+
+    print("PAMAP2 split mode: stratified random window split")
+    print(
+        f"train={len(train_dataset)}, "
+        f"val={len(val_dataset)}, "
+        f"test={len(test_dataset)}"
+    )
+    print(
+        f"Input shape={train_dataset.windows.shape}, "
+        f"num_classes={len(ACTIVITY_MAP)}, "
+        f"seed={seed}"
+    )
+
+    return train_loader, val_loader, test_loader
